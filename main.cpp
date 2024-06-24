@@ -11,10 +11,10 @@ qint64 getFileSizeInBytes(const QString &filePath) {
     return fileInfo.size();
 }
 
-// Функция для вычисления общего размера файлов в папке без углубления в подкаталоги
+// Функция для вычисления общего размера файлов в папке
 QMap<QString, qint64> calculateSizeGroupedByFolders(const QString &path, qint64 &totalSize) {
     QMap<QString, qint64> folderSizes;
-    qint64 unknownSize = 0;
+    qint64 CurrentDirectorySize = 0;
     QDir dir(path);
 
     // Проверка существования директории
@@ -47,12 +47,12 @@ QMap<QString, qint64> calculateSizeGroupedByFolders(const QString &path, qint64 
 
     // Суммирование размеров всех файлов верхнего уровня, которые не являются папками
     foreach (const QFileInfo &fileInfo, fileList) {
-        unknownSize += getFileSizeInBytes(fileInfo.absoluteFilePath());
+        CurrentDirectorySize += getFileSizeInBytes(fileInfo.absoluteFilePath());
     }
 
-    // Добавление неизвестных файлов в результат
-    folderSizes["Unknown"] = unknownSize;
-    totalSize += unknownSize;
+    // Добавление не папковых файлов в результат
+    folderSizes["CurrentDirectory"] = CurrentDirectorySize;
+    totalSize += CurrentDirectorySize;
 
     return folderSizes;
 }
