@@ -2,11 +2,6 @@
 
 QMap<QString, qint64> TypeSizeCalculator::calculateSize(const QString &path, qint64 &totalSize) {
     QMap<QString, qint64> typeSizes;
-    calculateSizeByTypesInFolder(path, typeSizes, totalSize);
-    return typeSizes;
-}
-
-void TypeSizeCalculator::calculateSizeByTypesInFolder(const QString &path, QMap<QString, qint64> &typeSizes, qint64 &totalSize) {
     QDir dir(path);
 
     // Получение списка файлов в текущей папке
@@ -31,6 +26,15 @@ void TypeSizeCalculator::calculateSizeByTypesInFolder(const QString &path, QMap<
 
     // Рекурсивный обход каждого подкаталога
     foreach (const QFileInfo &folderInfo, folderList) {
-        calculateSizeByTypesInFolder(folderInfo.absoluteFilePath(), typeSizes, totalSize);
+        QMap<QString, qint64> subFolderSizes = calculateSize(folderInfo.absoluteFilePath(), totalSize);
+        for (auto it = subFolderSizes.begin(); it != subFolderSizes.end(); ++it) {
+            if (typeSizes.contains(it.key())) {
+                typeSizes[it.key()] += it.value();
+            } else {
+                typeSizes[it.key()] = it.value();
+            }
+        }
     }
+
+    return typeSizes;
 }

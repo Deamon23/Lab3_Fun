@@ -6,7 +6,7 @@
 
 // Функция для форматирования процента с точностью до двух знаков после запятой
 QString formatPercentage(double percentage) {
-    if ((percentage < 0.01) && (percentage > 0)) {
+    if (percentage > 0 && percentage < 0.01) {
         return "< 0.01%";
     }
     return QString::number(percentage, 'f', 2) + "%";

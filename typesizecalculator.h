@@ -11,9 +11,6 @@
 class TypeSizeCalculator : public ISizeCalculator {
 public:
     QMap<QString, qint64> calculateSize(const QString &path, qint64 &totalSize) override;
-
-private:
-    void calculateSizeByTypesInFolder(const QString &path, QMap<QString, qint64> &typeSizes, qint64 &totalSize);
 };
 
 #endif // TYPESIZECALCULATOR_H
