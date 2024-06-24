@@ -2,6 +2,8 @@
 #include <QFileInfo>
 #include <QMap>
 #include <QDebug>
+#include <iomanip>
+#include <iostream>
 
 // Функция для получения размера файла в байтах
 qint64 getFileSizeInBytes(const QString &filePath) {
@@ -10,7 +12,7 @@ qint64 getFileSizeInBytes(const QString &filePath) {
 }
 
 // Функция для вычисления общего размера файлов в папке без углубления в подкаталоги
-QMap<QString, qint64> calculateSizeGroupedByFolders(const QString &path) {
+QMap<QString, qint64> calculateSizeGroupedByFolders(const QString &path, qint64 &totalSize) {
     QMap<QString, qint64> folderSizes;
     qint64 unknownSize = 0;
     QDir dir(path);
@@ -27,19 +29,20 @@ QMap<QString, qint64> calculateSizeGroupedByFolders(const QString &path) {
 
     // Обход каждого подкаталога
     foreach (const QFileInfo &folderInfo, folderList) {
-        qint64 totalSize = 0;
+        qint64 folderTotalSize = 0;
         QDir folderDir(folderInfo.absoluteFilePath());
 
         // Получение списка файлов в текущем подкаталоге
-        QFileInfoList fileList = folderDir.entryInfoList(QDir::Files | QDir::NoSymLinks);
+        QFileInfoList subFileList = folderDir.entryInfoList(QDir::Files | QDir::NoSymLinks);
 
         // Суммирование размеров всех файлов в текущем подкаталоге
-        foreach (const QFileInfo &fileInfo, fileList) {
-            totalSize += getFileSizeInBytes(fileInfo.absoluteFilePath());
+        foreach (const QFileInfo &fileInfo, subFileList) {
+            folderTotalSize += getFileSizeInBytes(fileInfo.absoluteFilePath());
         }
 
         // Сохранение общего размера файлов в подкаталоге
-        folderSizes[folderInfo.fileName()] = totalSize;
+        folderSizes[folderInfo.fileName()] = folderTotalSize;
+        totalSize += folderTotalSize;
     }
 
     // Суммирование размеров всех файлов верхнего уровня, которые не являются папками
@@ -48,7 +51,8 @@ QMap<QString, qint64> calculateSizeGroupedByFolders(const QString &path) {
     }
 
     // Добавление неизвестных файлов в результат
-    folderSizes["CurrentDirectory"] = unknownSize;
+    folderSizes["Unknown"] = unknownSize;
+    totalSize += unknownSize;
 
     return folderSizes;
 }
@@ -98,22 +102,34 @@ QMap<QString, qint64> calculateSizeGroupedByTypes(const QString &path) {
     return typeSizes;
 }
 
+// Функция для форматирования процента с точностью до двух знаков после запятой
+QString formatPercentage(double percentage) {
+    if (percentage > 0 && percentage < 0.01) {
+        return "< 0.01%";
+    }
+    return QString::number(percentage, 'f', 2) + "%";
+}
+
 int main() {
     QString path = "C:/gits/Lab3_Fun/Testing1";
+    qint64 totalSize = 0;
 
-    // Пример использования функции для группировки по папкам
-    QMap<QString, qint64> folderSizes = calculateSizeGroupedByFolders(path);
+    // Группировка по папкам
+    QMap<QString, qint64> folderSizes = calculateSizeGroupedByFolders(path, totalSize);
     qDebug() << "Размеры файлов, сгруппированные по папкам:";
     foreach (const QString &folderName, folderSizes.keys()) {
-        qDebug() << folderName << ":" << folderSizes[folderName] << "байт";
+        double percentage = (static_cast<double>(folderSizes[folderName]) / totalSize) * 100;
+        qDebug() << folderName << ":" << folderSizes[folderName] << "байт" << "(" << formatPercentage(percentage) << ")";
     }
 
-    // Пример использования функции для группировки по типам
+    // Группировка по типам
     QMap<QString, qint64> typeSizes = calculateSizeGroupedByTypes(path);
     qDebug() << "Размеры файлов, сгруппированные по типам:";
     foreach (const QString &fileType, typeSizes.keys()) {
-        qDebug() << fileType << ":" << typeSizes[fileType] << "байт";
+        double percentage = (static_cast<double>(typeSizes[fileType]) / totalSize) * 100;
+        qDebug() << fileType << ":" << typeSizes[fileType] << "байт" << "(" << formatPercentage(percentage) << ")";
     }
 
     return 0;
 }
+// C:/gits/Lab3_Fun/Testing1
