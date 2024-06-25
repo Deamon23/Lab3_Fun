@@ -33,25 +33,35 @@ QMap<QString, double> calculatePercentages(QMap<QString, qint64> &sizes, qint64 
     return percentages;
 }
 
+void printSizesAndPercentages(const QMap<QString, qint64> &sizes, const QMap<QString, double> &percentages, double minPer) {
+    for (auto it = sizes.begin(); it != sizes.end(); ++it) {
+        if (percentages[it.key()] > minPer || it.key() == "other") {
+            qDebug() << it.key() << ":" << it.value() << "байт" << "(" << formatPercentage(percentages[it.key()]) << ")";
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
 
     QString path = "C:/gits/Lab3_Fun/Testing1";
     qint64 totalSize = 0;
-    double minPer = 2;
+    double minPer = 0.01;
     // Создание контекста
     Context context;
 
     // Установка стратегии для группировки по папкам
     context.setStrategy(std::make_unique<FolderSizeCalculator>());
     QMap<QString, qint64> folderSizes = context.calculateSize(path, totalSize);
+    folderSizes["other"] = 0;
     QMap<QString, double> folderPercentages = calculatePercentages(folderSizes, totalSize, minPer);
     qDebug() << "Размеры файлов, сгруппированные по папкам:";
+
     QMap<QString, qint64>::const_iterator it1 = folderSizes.constBegin();
     QMap<QString, double>::const_iterator it2 = folderPercentages.constBegin();
 
     while (it1 != folderSizes.constEnd() && it2 != folderPercentages.constEnd()) {
-        if(it2.value() > minPer or (it1.key() == "other"))
+        if((it2.value() > minPer or it1.key() == "other") and it2.value()!=0)
         {
             qDebug() << it1.key() << ":" << it1.value() << "байт" << "(" << formatPercentage(it2.value()) << ")";
         }
@@ -71,7 +81,7 @@ int main(int argc, char *argv[]) {
     QMap<QString, double>::const_iterator it4 = TypePercentages.constBegin();
 
     while (it3 != typeSizes.constEnd() && it4 != TypePercentages.constEnd()) {
-        if(it4.value() > minPer or (it3.key() == "other"))
+        if((it4.value() > minPer or it3.key() == "other") and it4.value()!=0)
         {
             qDebug() << it3.key() << ":" << it3.value() << "байт" << "(" << formatPercentage(it4.value()) << ")";
         }
@@ -79,6 +89,6 @@ int main(int argc, char *argv[]) {
         ++it4;
     }
 
-    return a.exec();
+    return 0;
 }
 // C:/gits/Lab3_Fun/Testing1
