@@ -35,6 +35,6 @@ QMap<QString, qint64> TypeSizeCalculator::calculateSize(const QString &path, qin
             }
         }
     }
-
+    typeSizes["other"] = 0;
     return typeSizes;
 }

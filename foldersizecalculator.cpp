@@ -41,6 +41,6 @@ QMap<QString, qint64> FolderSizeCalculator::calculateSize(const QString &path, q
     // Добавление не папковых файлов в результат
     folderSizes["CurrentDirectory"] = currentDirectorySize;
     totalSize += currentDirectorySize;
-
+    folderSizes["other"] = 0;
     return folderSizes;
 }
